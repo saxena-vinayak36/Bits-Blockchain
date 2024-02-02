@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #products-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .product-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px;
+            padding: 15px;
+            width: 200px;
+            text-align: center;
+        }
+
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            color: #333;
+            float: right;
+        }
+
+        .search-bar {
+            margin: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>E-Commerce BITS Website</h1>
+        <button id="connect-wallet">Connect Wallet</button>
+    </header>
+
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search items...">
+        <select id="category-filter">
+            <option value="all">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <!-- Add more categories as needed -->
+        </select>
+        <button onclick="filterProducts()">Filter</button>
+    </div>
+
+    <div id="products-container"></div>
+
+    <div id="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2>Product Details</h2>
+            <img id="modal-image" src="" alt="Product Image" style="max-width: 100%;">
+            <p id="modal-description"></p>
+            <button id="buy-button" onclick="buyProduct()">Buy</button>
+        </div>
+    </div>
+
+    <script>
+        console.log("This website has been made by Vinayak Saxena \nF2022B4A3PS0709");// Dummy product data
+        const products = [
+            { id: 1, name: 'TITAN WATCH', category: 'electronics', description: '1Titan Nebula Art Deco Skeleton Automatic 18 Karat Solid Gold Watch for Men', image: '5074DL01_1.webp' },
+            { id: 2, name: 'WHITE HOODIE', category: 'clothing', description: 'Fabric: Poly Lycra blend Fabric Composition: 40%-60% lycra - Cotton Knitting: 3 Thread GSM: 220 GSM Inner Mesh Linear Sleeves: Long Sleeve', image: 'bits_pilani_bits_hoodie_white_1.jpg' },
+            { id: 3, name: 'CANON DSLR', category: 'electronics', description: 'With instinctive controls and a touchscreen that feels just like your smartphone, the EOS 200D is easy to use from the start. Shoot with a bright optical viewfinder to see the world as it really is, or a Vari-Angle screen that rotates to help you shoot from unusual perspectives. Shoot 24.2-megapixel photos that are rich with detail and colour and look fantastic straight from the camera – perfect for big prints, photobooks and on-line galleries and great for telling stories with your photos.', image: 'shopping.webp'},
+            { id: 4, name: 'ZIPPER', category: 'clothing', description: 'Full Sleeves Zipper Jacket 40-60 Poly Cotton Brushed Fleece, 330 GSM Fabric YKK Zipper Comfort Fit Actual products color may vary due to monitor settings Check our size chart to get your best fit Great for a semi formal look in the office or a sporty look when you are out and about.', image: 'zipper.jpg' },
+            { id: 5, name: 'iPHONE 15 MAX PRO', category: 'electronics', description: 'New Apple iPhone 15 Pro Max. Aerospace-grade titanium design, making it both strong and light. USB-C connector. All-day battery life up to 29hrs video playback. 48MP main camera with multiple focal lengths, like having seven pro lenses in your pocket. Telephoto lens with 5x optical zoom. Customizable Action button for your favorite feature. A17 Pro chip, pro-class GPU with 6 cores.', image: 'iphone.jpeg' },
+            { id: 6, name: 'BITS POLO', category: 'clothing', description: 'Fit Type: Regular Fit Half Sleeve Polo, Contrast Placket and Piping 200 GSM, 100% Premium Cotton, Regular Fit - Great comfort Color: Charcoal Melange, Note that actual color may vary due to monitor settings Check our size chart to get your best fit Perfect for Smart Casual or General Every Day wear', image: 'polo.jpg' },
+            { id: 7, name: 'MACBOOK AIR', category: 'electronics', description: 'Apple M2 chip with 8-core CPU, 10-core GPU, 16-core Neural Engine \n 8GB unified memory\n256GB SSD storage\n38.91 cm (15.3") Liquid Retina display with True Tone\n1080p FaceTime HD camera\nMagSafe 3 charging port\nTwo Thunderbolt / USB 4 ports\n35W Dual USB-C Port Power Adapter\nBacklit Magic Keyboard with Touch ID - US English', image: 'macbook.jpeg' },
+            { id: 8, name: 'BITS MUG', category: 'clothing', description: 'Ceramic Mug Dimension: 3” diameter, 4” height Sublimation print', image: 'cup.jpg' },
+            { id: 9, name: 'SAMSUNG TV', category: 'electronics', description: '1m 63cm (65") QN90C Neo QLED 4K Smart TV\n65QN90CAK \nWishlist\nNo Cost EMI starts from ₹ 71663.33/ month.\nQuantum Matrix Technology\nNeural Quantum Processor 4K\nDolby Atmos®\nBuilt-In loT Hub', image: 'tv.webp' },
+            { id: 10, name: 'BITS TECH TATTOO', category: 'clothing', description: 'This product once sold will not be exchanged or returned.', image: 'tatto.jpg' },
+        ];
+
+        function displayProducts() {
+            const productsContainer = document.getElementById('products-container');
+            productsContainer.innerHTML = '';
+
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" style="max-width: 100%;">
+                    <h3>${product.name}</h3>
+                    <p>${product.category}</p>
+                    <button onclick="openModal(${product.id})">Details</button>
+                `;
+                productsContainer.appendChild(productCard);
+            });
+        }
+
+        function openModal(productId) {
+            const modal = document.getElementById('modal');
+            const modalImage = document.getElementById('modal-image');
+            const modalDescription = document.getElementById('modal-description');
+
+            const product = products.find(p => p.id === productId);
+
+            modalImage.src = product.image;
+            modalDescription.textContent = product.description;
+
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+
+        function filterProducts() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('category-filter').value.toLowerCase();
+
+            const filteredProducts = products.filter(product => {
+                const nameMatch = product.name.toLowerCase().includes(searchInput);
+                const categoryMatch = (categoryFilter === 'all' || product.category.toLowerCase() === categoryFilter);
+                return nameMatch && categoryMatch;
+            });
+
+            displayProducts(filteredProducts);
+        }
+
+        function buyProduct() {
+            // Dummy function for buy functionality
+            alert('Buy functionality not implemented in this task.');
+        }
+
+        // Display initial products
+        displayProducts();
+    </script>
+</body>
+</html>
